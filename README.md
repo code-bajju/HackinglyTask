@@ -1,70 +1,123 @@
-# Getting Started with Create React App
+## README
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+### Project Overview
+This project is a profile management application that allows users to update and manage their personal information, social links, experience, and achievements. The application is built using React, Firebase, and Bootstrap, and it includes features like image uploads, form handling, and section-based UI using accordions.
 
-## Available Scripts
+### Design Choices and Technical Approach
 
-In the project directory, you can run:
+#### 1. **Backend Structure:**
+   - **Firebase Firestore:** We utilize Firebase Firestore as our backend to store and retrieve user data. Firestore provides a flexible and scalable database solution, allowing real-time updates with `onSnapshot`, which listens to changes in the data.
+   - **Firebase Authentication:** Firebase Authentication is used to manage user sessions and ensure that only authorized users can access or modify their profiles.
 
-### `npm start`
+#### 2. **Model and API Design:**
+   - **User Data Model:** The user data model in Firestore includes fields like `name`, `email`, `profilePicture`, `bannerImage`, `socialLinks`, `experience`, and `achievements`. This design enables a comprehensive user profile that covers personal details, professional experience, and accomplishments.
+   - **Firestore API Integration:** The integration with Firestore is achieved using the `onSnapshot` method to fetch real-time updates and `updateUserDocument` for updating user data. The API is designed to be simple and straightforward, focusing on CRUD operations (Create, Read, Update, Delete).
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+#### 3. **Frontend Structure:**
+   - **React Components:** The app is structured into reusable React components. For example, `ProfileImage` and `BannerImage` components handle the display of user images, while `AlertComponent` provides feedback to the user during form submission.
+   - **React Bootstrap:** Bootstrap is used for styling and layout, particularly with the `Accordion`, `Form`, `Button`, and `Container` components. This ensures a responsive and user-friendly interface.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+#### 4. **Rationale for Design Choices:**
+   - **Real-Time Updates:** The decision to use `onSnapshot` for real-time data fetching was made to ensure that users see the most up-to-date information without needing to refresh the page.
+   - **Accordion UI:** The accordion structure allows for a clean and organized display of user profile sections, making it easy to navigate through different parts of the profile.
+   - **User Authorization:** Using Firebase Authentication ensures that only the rightful owner of a profile or an admin can make changes, providing security and privacy.
 
-### `npm test`
+#### 5. **Challenges Faced:**
+   - **Image Upload and Display:** One challenge was handling image uploads for the profile picture and banner image. Ensuring the images are correctly uploaded, stored, and displayed required careful management of file inputs and state.
+   - **Form Handling:** Managing form state across multiple sections (e.g., user information, social links, experience) while keeping the UI responsive and the data consistent was a challenge. This was addressed by centralizing the form state management and using event handlers effectively.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## API Documentation
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Base URL
+The application uses Firebase Firestore, so the endpoints correspond to Firestore document paths. There isn't a traditional REST API, but interactions are handled through Firebase SDK functions.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Authentication
+Firebase Authentication is used to secure the API. Users must be authenticated to interact with the API. Authentication is managed via Firebase's Auth SDK.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Endpoints
 
-### `npm run eject`
+#### 1. **Get User Profile**
+   - **Endpoint:** `GET /users/{userId}`
+   - **Description:** Fetches the user profile for the given `userId`.
+   - **Request Parameters:** 
+     - `userId` (string): The unique identifier for the user.
+   - **Response:**
+     ```json
+     {
+       "name": "John Doe",
+       "email": "johndoe@example.com",
+       "profilePicture": "url_to_profile_picture",
+       "bannerImage": "url_to_banner_image",
+       "socialLinks": {
+         "github": "https://github.com/johndoe",
+         "linkedin": "https://linkedin.com/in/johndoe"
+       },
+       "experience": "Work experience details...",
+       "achievements": {
+         "hackathons": "Hackathon details...",
+         "certifications": "Certification details..."
+       }
+     }
+     ```
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+#### 2. **Update User Profile**
+   - **Endpoint:** `PUT /users/{userId}`
+   - **Description:** Updates the user profile for the given `userId`.
+   - **Request Parameters:** 
+     - `userId` (string): The unique identifier for the user.
+   - **Request Body:**
+     ```json
+     {
+       "name": "John Doe",
+       "profilePicture": "url_to_profile_picture",
+       "bannerImage": "url_to_banner_image",
+       "socialLinks": {
+         "github": "https://github.com/johndoe",
+         "linkedin": "https://linkedin.com/in/johndoe"
+       },
+       "experience": "Updated work experience...",
+       "achievements": {
+         "hackathons": "Updated hackathon details...",
+         "certifications": "Updated certification details..."
+       }
+     }
+     ```
+   - **Response:**
+     ```json
+     {
+       "message": "Profile updated successfully"
+     }
+     ```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Usage Examples
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+#### Example: Fetch User Profile
+```javascript
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "./firebase/config";
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+const fetchUserProfile = async (userId) => {
+  const userDoc = await getDoc(doc(db, "users", userId));
+  if (userDoc.exists()) {
+    console.log(userDoc.data());
+  } else {
+    console.log("No such document!");
+  }
+};
+```
 
-## Learn More
+#### Example: Update User Profile
+```javascript
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "./firebase/config";
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+const updateUserProfile = async (userId, data) => {
+  await setDoc(doc(db, "users", userId), data, { merge: true });
+  console.log("Profile updated successfully");
+};
+```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+---
 
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
